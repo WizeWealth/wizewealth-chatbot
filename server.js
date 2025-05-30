@@ -11,7 +11,7 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-const OPENAI_API_KEY = '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'; // Replace with your OpenAI key
+const OPENAI_API_KEY = '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'; // Replace with your OpenAI key
 
 app.post('/chat', async (req, res) => {
   const userMessage = req.body.message;
