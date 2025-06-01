@@ -11,7 +11,7 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-const OPENAI_API_KEY = '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'; // Replace with your OpenAI key
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY; // Replace with your OpenAI key
 
 app.post('/chat', async (req, res) => {
   const userMessage = req.body.message;
