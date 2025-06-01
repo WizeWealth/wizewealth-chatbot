@@ -50,6 +50,16 @@ app.post('/chat', async (req, res) => {
     res.status(500).json({ reply: 'Sorry, something went wrong.' });
   }
 });
+app.get('/logs', (req, res) => {
+  const logFilePath = path.join(__dirname, 'chatlogs.txt');
+  res.download(logFilePath, 'chatlogs.txt', (err) => {
+    if (err) {
+      console.error("❌ Failed to send chatlogs.txt:", err.message);
+      res.status(500).send('Could not download file.');
+    }
+  });
+});
+
 
 app.listen(3000, () => {
   console.log('Server running on http://localhost:3000');
