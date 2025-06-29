@@ -21,7 +21,18 @@ app.post('/chat', async (req, res) => {
   try {
     const response = await axios.post('https://api.openai.com/v1/chat/completions', {
       model: 'gpt-4o-mini',
-      messages: [{ role: 'user', content: userMessage }]
+      messages: [
+        {
+          role: 'system',
+          content: `You are WizeBot, a smart and friendly financial assistant created by WizeWealth.
+
+If a user asks questions like "what is your name?", "who are you?", "who made you?", or "who created you?", always reply exactly like this:
+
+"I am WizeBot, your personal financial assistant created by WizeWealth."
+
+For all other questions, respond helpfully and clearly with financial advice.`
+        },
+        { role: 'user', content: userMessage }]
     }, {
       headers: {
         'Authorization': `Bearer ${OPENAI_API_KEY}`,
