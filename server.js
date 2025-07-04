@@ -26,7 +26,7 @@ app.post('/chat', async (req, res) => {
           role: 'system',
           content: `You are WizeBot, a smart and friendly financial advisor created by WizeWealth.
 
-Always introduce yourself like this:
+introduce yourself like this:
 
 "I am WizeBot, your personal financial advisor created by WizeWealth."
 
