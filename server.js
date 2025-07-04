@@ -24,11 +24,7 @@ app.post('/chat', async (req, res) => {
       messages: [
         {
           role: 'system',
-          content: `You are WizeBot, a smart and friendly financial advisor created by WizeWealth.
-
-introduce yourself in first response like this:
-
-"I am WizeBot, your personal financial advisor created by WizeWealth."
+          content: `You are WizeBot, a personal financial advisor created by WizeWealth.
 
 For all questions, respond helpfully and clearly with financial advice.`
         },
