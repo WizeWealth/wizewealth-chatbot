@@ -17,18 +17,18 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 // 🧠 Function to fetch stock price from fuzzy user input
 async function getStockPriceByFuzzyName(query) {
   console.log("📈 Triggered stock price function with query:", query);
-  const keywords = query.toLowerCase().replace(/[^a-zA-Z\s]/g, '').split(' ');
-  const likelyName = keywords.find(word =>
+  const keywords = query.toLowerCase().replace(/[^a-z\s]/g, '').split(/\s+/).filter(word =>
     !['price', 'stock', 'share', 'of', 'today', 'tell', 'me', 'what', 'is'].includes(word)
   );
 
-  if (!likelyName) {
+  if (keywords.length === 0) {
     return "Please mention a company name to get its stock price.";
   }
 
   try {
     // Step 1: Search Yahoo Finance for possible matches
-    const searchUrl = `https://query1.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(likelyName)}&lang=en-US`;
+    const searchQuery = keywords.join(' ');
+    const searchUrl = `https://query1.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(searchQuery)}&lang=en-US`;
     const searchResponse = await axios.get(searchUrl);
     const matches = searchResponse.data.quotes;
 
@@ -36,53 +36,46 @@ async function getStockPriceByFuzzyName(query) {
       return "Sorry, I couldn't find any stock matching that name.";
     }
 
-    // Step 2: Find an Indian NSE stock (symbol ends in .NS)
-    const nseMatch = matches.find(item => item.symbol.endsWith('.NS'));
-    const inputClean = query.toLowerCase().replace(/[^a-z\s]/g, '');
-const allKeywords = inputClean.split(/\s+/).filter(word =>
-  !['price', 'stock', 'share', 'of', 'today', 'tell', 'me', 'what', 'is'].includes(word)
-);
+    // Step 2: Try exact match first
+    const exactMatch = matches.find(m =>
+      m.exchange === 'NSE' &&
+      m.shortname.toLowerCase() === searchQuery.toLowerCase()
+    );
 
-// Try finding best NSE match with all words
-const refinedMatch = matches.find(m =>
-  m.exchange === 'NSE' &&
-  allKeywords.every(word =>
-    m.shortname.toLowerCase().includes(word) || m.symbol.toLowerCase().includes(word)
-  )
-);
+    // Step 3: Refined fuzzy match (all keywords in shortname)
+    const refinedMatch = matches.find(m =>
+      m.exchange === 'NSE' &&
+      keywords.every(word =>
+        m.shortname.toLowerCase().includes(word) || m.symbol.toLowerCase().includes(word)
+      )
+    );
 
-// Fallback to first NSE match or any match
-const bestMatch = refinedMatch || nseMatch || matches[0];
+    // Step 4: General NSE fallback
+    const nseMatch = matches.find(m => m.exchange === 'NSE');
 
-
+    // Step 5: Final fallback
+    const bestMatch = exactMatch || refinedMatch || nseMatch || matches[0];
     const stockSymbol = bestMatch.symbol;
 
-    // Step 3: Scrape the live price from Yahoo
-   console.log("🔍 Fetching Yahoo JSON API for symbol:", stockSymbol);
+    console.log("🎯 Matched:", bestMatch.shortname, stockSymbol);
 
-const quoteApiUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${stockSymbol}`;
-const quoteResponse = await axios.get(quoteApiUrl);
-
-const price = quoteResponse.data.chart.result[0].meta.regularMarketPrice;
-
-if (!price) {
-  return `Sorry, I found ${stockSymbol} but couldn’t get its price.`;
-}
-
-return `The current stock price of ${bestMatch.shortname} (${stockSymbol}) is ₹${price.toFixed(2)}.`;
-
+    // Step 6: Use Yahoo's JSON API to fetch price
+    const quoteApiUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${stockSymbol}`;
+    const quoteResponse = await axios.get(quoteApiUrl);
+    const price = quoteResponse.data.chart.result[0].meta.regularMarketPrice;
 
     if (!price || isNaN(price)) {
-      throw new Error("Couldn't find valid stock price on Yahoo.");
+      return `Sorry, I found ${stockSymbol} but couldn’t get its price.`;
     }
 
-    return `The current stock price of ${bestMatch.shortname} (${stockSymbol}) is ₹${price}.`;
+    return `The current stock price of ${bestMatch.shortname} (${stockSymbol}) is ₹${price.toFixed(2)}.`;
 
   } catch (error) {
-    console.error("❌ Yahoo stock scrape failed:", error.message);
+    console.error("❌ Yahoo stock fetch failed:", error.message);
     return "Sorry, I couldn't fetch the stock price right now.";
   }
 }
+
 
 
 app.post('/chat', async (req, res) => {
