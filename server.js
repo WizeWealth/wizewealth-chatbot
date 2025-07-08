@@ -43,13 +43,19 @@ async function getStockPriceByFuzzyName(query) {
     const stockSymbol = bestMatch.symbol;
 
     // Step 3: Scrape the live price from Yahoo
-    const quoteUrl = `https://finance.yahoo.com/quote/${stockSymbol}`;
-    console.log("🔍 Scraping Yahoo for symbol:", stockSymbol);
-    const quoteResponse = await axios.get(quoteUrl, {
-      headers: { 'User-Agent': 'Mozilla/5.0' }
-    });
-    const $ = cheerio.load(quoteResponse.data);
-    const price = $('fin-streamer[data-field="regularMarketPrice"]').first().text().trim();
+   console.log("🔍 Fetching Yahoo JSON API for symbol:", stockSymbol);
+
+const quoteApiUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${stockSymbol}`;
+const quoteResponse = await axios.get(quoteApiUrl);
+
+const price = quoteResponse.data.chart.result[0].meta.regularMarketPrice;
+
+if (!price) {
+  return `Sorry, I found ${stockSymbol} but couldn’t get its price.`;
+}
+
+return `The current stock price of ${bestMatch.shortname} (${stockSymbol}) is ₹${price.toFixed(2)}.`;
+
 
     if (!price || isNaN(price)) {
       throw new Error("Couldn't find valid stock price on Yahoo.");
