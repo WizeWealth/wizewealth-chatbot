@@ -44,6 +44,7 @@ async function getStockPriceByFuzzyName(query) {
 
     // Step 3: Scrape the live price from Yahoo
     const quoteUrl = `https://finance.yahoo.com/quote/${stockSymbol}`;
+    console.log("🔍 Scraping Yahoo for symbol:", stockSymbol);
     const quoteResponse = await axios.get(quoteUrl, {
       headers: { 'User-Agent': 'Mozilla/5.0' }
     });
