@@ -38,7 +38,22 @@ async function getStockPriceByFuzzyName(query) {
 
     // Step 2: Find an Indian NSE stock (symbol ends in .NS)
     const nseMatch = matches.find(item => item.symbol.endsWith('.NS'));
-    const bestMatch = nseMatch || matches[0];
+    const inputClean = query.toLowerCase().replace(/[^a-z\s]/g, '');
+const allKeywords = inputClean.split(/\s+/).filter(word =>
+  !['price', 'stock', 'share', 'of', 'today', 'tell', 'me', 'what', 'is'].includes(word)
+);
+
+// Try finding best NSE match with all words
+const refinedMatch = matches.find(m =>
+  m.exchange === 'NSE' &&
+  allKeywords.every(word =>
+    m.shortname.toLowerCase().includes(word) || m.symbol.toLowerCase().includes(word)
+  )
+);
+
+// Fallback to first NSE match or any match
+const bestMatch = refinedMatch || nseMatch || matches[0];
+
 
     const stockSymbol = bestMatch.symbol;
 
