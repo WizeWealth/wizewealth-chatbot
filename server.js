@@ -86,7 +86,7 @@ app.post('/chat', async (req, res) => {
   const logFilePath = path.join(__dirname, 'chatlogs.txt');
   
 // ✅ Check for stock price query first
-if (userMessage.toLowerCase().includes("stock price") || userMessage.toLowerCase().includes("share price")) {
+if (/stock|share/i.test(userMessage) && /price/i.test(userMessage)) {
   const stockReply = await getStockPriceByFuzzyName(userMessage);
   return res.json({ reply: stockReply });
 }
