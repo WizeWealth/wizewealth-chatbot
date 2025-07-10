@@ -36,31 +36,36 @@ async function getStockPriceByFuzzyName(query) {
       return "Sorry, I couldn't find any stock matching that name.";
     }
 
-    // Step 2: Try exact match first
-    const exactMatch = matches.find(m =>
-      m.exchange === 'NSE' &&
-      m.shortname.toLowerCase() === searchQuery.toLowerCase()
-    );
-
-    // Step 3: Refined fuzzy match (all keywords in shortname)
-    const refinedMatch = matches.find(m =>
-      m.exchange === 'NSE' &&
-      keywords.every(word =>
-        m.shortname.toLowerCase().includes(word) || m.symbol.toLowerCase().includes(word)
-      )
-    );
-
-    // Step 4: General NSE fallback
-    const nseMatch = matches.find(m => m.exchange === 'NSE');
-
-   
-    // Step 5: Symbol contains match (e.g., vedanta → VEDL.NS)
-const symbolMatch = matches.find(m =>
-  m.exchange === 'NSE' && m.symbol.toLowerCase().includes(keywords.join(''))
+    // Step 2: Try exact match (shortname matches exactly)
+const exactMatch = matches.find(m =>
+  m.exchange === 'NSE' &&
+  m.shortname.toLowerCase() === searchQuery.toLowerCase()
 );
 
+// Step 3: All keywords match in shortname
+const refinedMatch = matches.find(m =>
+  m.exchange === 'NSE' &&
+  keywords.every(word =>
+    m.shortname.toLowerCase().includes(word) ||
+    m.symbol.toLowerCase().includes(word)
+  )
+);
+
+// Step 4: Loose partial match (contains any keyword)
+const partialMatch = matches.find(m =>
+  m.exchange === 'NSE' &&
+  keywords.some(word =>
+    m.shortname.toLowerCase().includes(word) ||
+    m.symbol.toLowerCase().includes(word)
+  )
+);
+
+// Step 5: NSE fallback
+const nseMatch = matches.find(m => m.exchange === 'NSE');
+
 // Step 6: Final fallback
-const bestMatch = exactMatch || refinedMatch || symbolMatch || nseMatch || matches[0];
+const bestMatch = exactMatch || refinedMatch || partialMatch || nseMatch || matches[0];
+
 
     const stockSymbol = bestMatch.symbol;
 
