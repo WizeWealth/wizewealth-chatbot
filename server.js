@@ -93,10 +93,18 @@ app.post('/chat', async (req, res) => {
   const logFilePath = path.join(__dirname, 'chatlogs.txt');
   
 // ✅ Check for stock price query first
-if (/stock|share/i.test(userMessage) && /price/i.test(userMessage)) {
+const msg = userMessage.toLowerCase();
+
+const isStockQuery =
+  /(stock|share)/i.test(msg) &&
+  /(price|value|quote|rate)/i.test(msg);
+
+if (isStockQuery) {
+  console.log("🧠 Detected stock query intent");
   const stockReply = await getStockPriceByFuzzyName(userMessage);
   return res.json({ reply: stockReply });
 }
+
 
   try {
     const response = await axios.post('https://api.openai.com/v1/chat/completions', {
