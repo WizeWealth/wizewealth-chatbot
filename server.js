@@ -68,7 +68,6 @@ const bestMatch =
   (exactMatch && exactMatch.symbol.endsWith('.NS')) ||
   (refinedMatch && refinedMatch.symbol.endsWith('.NS')) ||
   (partialMatch && partialMatch.symbol.endsWith('.NS')) ||
-  (fallbackMatch && fallbackMatch.symbol.endsWith('.NS')) ||
   matches.find(m => m.symbol.endsWith('.NS')) ||
   matches[0];
 
