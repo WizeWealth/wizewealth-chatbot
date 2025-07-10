@@ -28,7 +28,7 @@ async function getStockPriceByFuzzyName(query) {
   try {
     // Step 1: Search Yahoo Finance for possible matches
     const searchQuery = keywords.join(' ');
-    const searchUrl = `https://query1.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(searchQuery)}&lang=en-US`;
+    const searchUrl = `https://query1.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(searchQuery)}&lang=en-US&region=IN`;
     const searchResponse = await axios.get(searchUrl);
     const matches = searchResponse.data.quotes;
 
