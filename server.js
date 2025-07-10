@@ -53,8 +53,15 @@ async function getStockPriceByFuzzyName(query) {
     // Step 4: General NSE fallback
     const nseMatch = matches.find(m => m.exchange === 'NSE');
 
-    // Step 5: Final fallback
-    const bestMatch = exactMatch || refinedMatch || nseMatch || matches[0];
+   
+    // Step 5: Symbol contains match (e.g., vedanta → VEDL.NS)
+const symbolMatch = matches.find(m =>
+  m.exchange === 'NSE' && m.symbol.toLowerCase().includes(keywords.join(''))
+);
+
+// Step 6: Final fallback
+const bestMatch = exactMatch || refinedMatch || symbolMatch || nseMatch || matches[0];
+
     const stockSymbol = bestMatch.symbol;
 
     console.log("🎯 Matched:", bestMatch.shortname, stockSymbol);
