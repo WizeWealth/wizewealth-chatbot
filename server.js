@@ -64,7 +64,14 @@ const partialMatch = matches.find(m =>
 const nseMatch = matches.find(m => m.exchange === 'NSE');
 
 // Step 6: Final fallback
-const bestMatch = exactMatch || refinedMatch || partialMatch || nseMatch || matches[0];
+const bestMatch =
+  (exactMatch && exactMatch.symbol.endsWith('.NS')) ||
+  (refinedMatch && refinedMatch.symbol.endsWith('.NS')) ||
+  (partialMatch && partialMatch.symbol.endsWith('.NS')) ||
+  (fallbackMatch && fallbackMatch.symbol.endsWith('.NS')) ||
+  matches.find(m => m.symbol.endsWith('.NS')) ||
+  matches[0];
+
 
 
     const stockSymbol = bestMatch.symbol;
