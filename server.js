@@ -122,23 +122,29 @@ async function getPreciousMetalPrice(query) {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0 Safari/537.36'
       }
     });
+
     const $ = cheerio.load(response.data);
+    let goldPrice = null;
+    let silverPrice = null;
 
-    if (isGold) {
-      const gold24kRow = $('table.gold_silver_table tbody tr').filter((i, el) =>
-        $(el).text().toLowerCase().includes('24 carat')
-      ).first();
+    $('table.gold_silver_table tbody tr').each((i, el) => {
+      const metalName = $(el).find('td').eq(0).text().toLowerCase();
+      const price = $(el).find('td').eq(1).text().trim();
 
-      const goldPrice = gold24kRow.find('td').eq(1).text().trim();
+      if (metalName.includes('24 carat')) {
+        goldPrice = price;
+      }
+
+      if (metalName.includes('silver (10 grams)') || metalName.includes('silver')) {
+        silverPrice = price;
+      }
+    });
+
+    if (isGold && goldPrice) {
       return `Today’s 24K gold price is ₹${goldPrice} per 10 grams.`;
     }
 
-    if (isSilver) {
-      const silverRow = $('table.gold_silver_table tbody tr').filter((i, el) =>
-        $(el).text().toLowerCase().includes('silver')
-      ).first();
-
-      const silverPrice = silverRow.find('td').eq(1).text().trim();
+    if (isSilver && silverPrice) {
       return `Today’s silver price is ₹${silverPrice} per 10 grams.`;
     }
 
@@ -149,7 +155,6 @@ async function getPreciousMetalPrice(query) {
     return "Sorry, I couldn’t retrieve gold or silver prices right now.";
   }
 }
-
 
 
 app.post('/chat', async (req, res) => {
