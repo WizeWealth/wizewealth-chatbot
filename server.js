@@ -102,6 +102,7 @@ const bestMatch =
     return "Sorry, I couldn't fetch the stock price right now.";
   }
 }
+// 🧠 Function to fetch Precious metal like gold and silver price
 async function getPreciousMetalPrice(query) {
   console.log("🔍 Precious metal price request:", query);
   const cleanedQuery = query.toLowerCase();
