@@ -116,7 +116,7 @@ async function getPreciousMetalPrice(query) {
   }
 
   try {
-    const url = 'https://www.goodreturns.in/gold-rates/';
+    const url = 'https://www.bankbazaar.com/gold-rate.html';
     const response = await axios.get(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0 Safari/537.36'
@@ -127,17 +127,19 @@ async function getPreciousMetalPrice(query) {
     let goldPrice = null;
     let silverPrice = null;
 
-    $('table.gold_silver_table tbody tr').each((i, el) => {
-      const metalName = $(el).find('td').eq(0).text().toLowerCase();
-      const price = $(el).find('td').eq(1).text().trim();
+    $('table').each((i, table) => {
+      $(table).find('tr').each((j, row) => {
+        const text = $(row).text().toLowerCase();
+        const cells = $(row).find('td');
 
-      if (metalName.includes('24 carat')) {
-        goldPrice = price;
-      }
+        if (text.includes('24 karat')) {
+          goldPrice = cells.eq(1).text().trim();
+        }
 
-      if (metalName.includes('silver (10 grams)') || metalName.includes('silver')) {
-        silverPrice = price;
-      }
+        if (text.includes('silver')) {
+          silverPrice = cells.eq(1).text().trim();
+        }
+      });
     });
 
     if (isGold && goldPrice) {
