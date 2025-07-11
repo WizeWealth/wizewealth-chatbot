@@ -17,9 +17,18 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 // 🧠 Function to fetch stock price from fuzzy user input
 async function getStockPriceByFuzzyName(query) {
   console.log("📈 Triggered stock price function with query:", query);
-  const keywords = query.toLowerCase().replace(/[^a-z\s]/g, '').split(/\s+/).filter(word =>
-    !['price', 'stock', 'share', 'of', 'today', 'tell', 'me', 'what', 'is'].includes(word)
-  );
+  const cleanedQuery = query.toLowerCase().replace(/['’]/g, '').replace(/[^a-z\s]/g, '');
+const words = cleanedQuery.split(/\s+/);
+const stopWords = ['price', 'stock', 'share', 'of', 'today', 'tell', 'me', 'what', 'is', 'can', 'you', 'please', 'the', 'value', 'quote', 'rate'];
+
+let keywords = words.filter(word => !stopWords.includes(word));
+let searchQuery = keywords.join(' ');
+
+// 🧠 Fallback: If no meaningful keywords found, try using the last 3 words
+if (!searchQuery || searchQuery.length < 3) {
+  searchQuery = words.slice(-3).join(' ');
+}
+
 
   if (keywords.length === 0) {
     return "Please mention a company name to get its stock price.";
