@@ -102,6 +102,47 @@ const bestMatch =
     return "Sorry, I couldn't fetch the stock price right now.";
   }
 }
+async function getPreciousMetalPrice(query) {
+  console.log("🔍 Precious metal price request:", query);
+  const cleanedQuery = query.toLowerCase();
+
+  const isGold = /gold/i.test(cleanedQuery);
+  const isSilver = /silver/i.test(cleanedQuery);
+
+  if (!isGold && !isSilver) {
+    return "Please mention if you want the price of gold or silver.";
+  }
+
+  try {
+    const url = 'https://www.goodreturns.in/gold-rates/';
+    const response = await axios.get(url);
+    const $ = cheerio.load(response.data);
+
+    if (isGold) {
+      const gold24kRow = $('table.gold_silver_table tbody tr').filter((i, el) =>
+        $(el).text().toLowerCase().includes('24 carat')
+      ).first();
+
+      const goldPrice = gold24kRow.find('td').eq(1).text().trim();
+      return `Today’s 24K gold price is ₹${goldPrice} per 10 grams.`;
+    }
+
+    if (isSilver) {
+      const silverRow = $('table.gold_silver_table tbody tr').filter((i, el) =>
+        $(el).text().toLowerCase().includes('silver')
+      ).first();
+
+      const silverPrice = silverRow.find('td').eq(1).text().trim();
+      return `Today’s silver price is ₹${silverPrice} per 10 grams.`;
+    }
+
+    return "Sorry, I couldn't find the current price.";
+
+  } catch (err) {
+    console.error("❌ Failed to fetch metal prices:", err.message);
+    return "Sorry, I couldn’t retrieve gold or silver prices right now.";
+  }
+}
 
 
 
@@ -123,6 +164,16 @@ if (isStockQuery) {
   console.log("🧠 Detected stock query intent");
   const stockReply = await getStockPriceByFuzzyName(userMessage);
   return res.json({ reply: stockReply });
+}
+  // ✅ Check for precious metal price query
+const isMetalQuery =
+  /(gold|silver)/i.test(msg) &&
+  /(price|rate|cost|value)/i.test(msg);
+
+if (isMetalQuery) {
+  console.log("🧠 Detected precious metal query intent");
+  const metalReply = await getPreciousMetalPrice(userMessage);
+  return res.json({ reply: metalReply });
 }
 
 
