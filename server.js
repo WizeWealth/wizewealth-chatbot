@@ -102,6 +102,7 @@ const bestMatch =
     return "Sorry, I couldn't fetch the stock price right now.";
   }
 }
+
 // 🧠 Function to fetch Precious metal like gold and silver price
 async function getPreciousMetalPrice(query) {
   console.log("🔍 Precious metal price request:", query);
@@ -116,7 +117,11 @@ async function getPreciousMetalPrice(query) {
 
   try {
     const url = 'https://www.goodreturns.in/gold-rates/';
-    const response = await axios.get(url);
+    const response = await axios.get(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0 Safari/537.36'
+      }
+    });
     const $ = cheerio.load(response.data);
 
     if (isGold) {
