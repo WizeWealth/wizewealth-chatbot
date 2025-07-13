@@ -1,5 +1,5 @@
 const cron = require('node-cron');
-const axios = require('axios');
+const got = require('got');
 const cheerio = require('cheerio');
 const fs = require('fs');
 const path = require('path');
@@ -9,13 +9,15 @@ async function runScraper() {
 
   try {
     const url = 'https://finance.yahoo.com/most-active?count=100&offset=0';
-    const { data } = await axios.get('https://finance.yahoo.com/most-active?count=100&offset=0', {
+    const response = await got('https://finance.yahoo.com/most-active?count=100&offset=0', {
   headers: {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
     'Accept-Language': 'en-US,en;q=0.9'
-  },
-  decompress: true // Let Axios handle compression
+  }
 });
+
+const data = response.body;
+
 
 
     const $ = cheerio.load(data);
