@@ -9,7 +9,12 @@ async function runScraper() {
 
   try {
     const url = 'https://finance.yahoo.com/most-active?count=100&offset=0';
-    const { data } = await axios.get(url);
+    const { data } = await axios.get(url, {
+  headers: {
+    'Accept-Encoding': 'identity'
+  }
+});
+
     const $ = cheerio.load(data);
 
     const stocks = [];
