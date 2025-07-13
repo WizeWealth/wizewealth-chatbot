@@ -58,3 +58,7 @@ module.exports = () => {
     }
   });
 };
+// run once immediately for testing (then remove it)
+(async () => {
+  await cron.tasks[0].task(); // runs the cron job logic right now
+})();
