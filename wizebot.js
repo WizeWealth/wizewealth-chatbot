@@ -230,7 +230,7 @@ For all other questions, respond helpfully and clearly with financial advice.`
     res.status(500).json({ reply: 'Sorry, something went wrong.' });
   }
 });
-
+console.log('✅ wizebot.js loaded');
 }
 module.exports = registerWizeBotRoutes;
 
