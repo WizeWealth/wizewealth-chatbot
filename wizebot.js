@@ -11,7 +11,7 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
 
 function registerWizeBotRoutes(app) {
-// 🧠 Function to fetch stock price from fuzzy user input
+  // 🧠 Function to fetch stock price from fuzzy user input
 async function getStockPriceByFuzzyName(query) {
   console.log("📈 Triggered stock price function with query:", query);
   const cleanedQuery = query.toLowerCase().replace(/['’]/g, '').replace(/[^a-z\s]/g, '');
@@ -230,5 +230,7 @@ For all other questions, respond helpfully and clearly with financial advice.`
     res.status(500).json({ reply: 'Sorry, something went wrong.' });
   }
 });
+
 }
 module.exports = registerWizeBotRoutes;
+
