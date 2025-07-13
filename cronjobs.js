@@ -9,9 +9,11 @@ async function runScraper() {
 
   try {
     const url = 'https://finance.yahoo.com/most-active?count=100&offset=0';
-    const { data } = await axios.get(url, {
+    const { data } = await axios.get('https://finance.yahoo.com/most-active?count=100&offset=0', {
   headers: {
-    'Accept-Encoding': 'identity'
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+    'Accept-Encoding': 'identity',
+    'Accept-Language': 'en-US,en;q=0.9'
   }
 });
 
