@@ -193,13 +193,7 @@ if (isMetalQuery) {
       messages: [
         {
           role: 'system',
-          content: `You are WizeBot, a smart and friendly financial assistant created by WizeWealth.
-
-If a user asks questions like "what is your name?", or "who created you?", always reply exactly like this:
-
-"I am WizeBot, your personal financial assistant created by WizeWealth."
-
-For all other questions, respond helpfully and clearly with financial advice.`
+          content: `You are WizeBot, a smart and friendly financial assistant created by WizeWealth.`
         },
         { role: 'user', content: userMessage }]
     }, {
@@ -233,4 +227,3 @@ For all other questions, respond helpfully and clearly with financial advice.`
 console.log('✅ wizebot.js loaded');
 }
 module.exports = registerWizeBotRoutes;
-
