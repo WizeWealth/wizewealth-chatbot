@@ -1,5 +1,5 @@
 const cron = require('node-cron');
-const got = require('got');
+const got = (...args) => import('got').then(mod => mod.default(...args));
 const cheerio = require('cheerio');
 const fs = require('fs');
 const path = require('path');
@@ -8,17 +8,13 @@ async function runScraper() {
   console.log("⚡ Running Nifty 500 scraper...");
 
   try {
-    const url = 'https://finance.yahoo.com/most-active?count=100&offset=0';
     const response = await got('https://finance.yahoo.com/most-active?count=100&offset=0', {
   headers: {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
     'Accept-Language': 'en-US,en;q=0.9'
   }
 });
-
 const data = response.body;
-
-
 
     const $ = cheerio.load(data);
 
@@ -56,8 +52,12 @@ const data = response.body;
       losers
     };
 
-    const outputPath = path.join(__dirname, 'public', 'nifty500.json');
-    fs.writeFileSync(outputPath, JSON.stringify(result, null, 2));
+    const outputDir = path.join(__dirname, 'public');
+fs.mkdirSync(outputDir, { recursive: true });
+
+const outputPath = path.join(outputDir, 'nifty500.json');
+fs.writeFileSync(outputPath, JSON.stringify(result, null, 2));
+
     console.log("✅ Nifty 500 data saved to nifty500.json");
 
   } catch (err) {
