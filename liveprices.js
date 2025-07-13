@@ -1,5 +1,13 @@
+const path = require('path');
+const fs = require('fs');
+
 module.exports = (app) => {
-    // Live price endpoints will be added here later
-    console.log("✅ liveprices.js loaded (no endpoints yet)");
-  };
-  
+  app.get('/api/nifty500', (req, res) => {
+    const filePath = path.join(__dirname, 'public', 'nifty500.json');
+    if (fs.existsSync(filePath)) {
+      res.sendFile(filePath);
+    } else {
+      res.status(404).json({ message: 'Data not available' });
+    }
+  });
+};
