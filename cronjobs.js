@@ -85,7 +85,7 @@ const losers = [...stockData]
 
 // 🕒 Schedule the stock cron job (6:00 PM IST daily)
 module.exports = () => {
-  cron.schedule('15 18 * * *', runScraper, {
+  cron.schedule('0 17 * * *', runScraper, {
   timezone: 'Asia/Kolkata'
 });
 };
