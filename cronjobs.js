@@ -80,5 +80,7 @@ async function runScraper() {
 
 // 🕒 Schedule the stock cron job (6:00 PM IST daily)
 module.exports = () => {
-  cron.schedule('0 18 * * *', runScraper);
+  cron.schedule('7 18 * * *', runScraper, {
+  timezone: 'Asia/Kolkata'
+});
 };
