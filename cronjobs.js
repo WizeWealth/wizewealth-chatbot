@@ -69,7 +69,4 @@ module.exports = () => {
   // Schedule the job to run at 6 PM IST every day
   cron.schedule('0 18 * * *', runScraper);
 
-  // Run once immediately (for testing)
-  runScraper();
-};
 
