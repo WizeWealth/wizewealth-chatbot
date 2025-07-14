@@ -2,18 +2,31 @@ const cron = require('node-cron');
 const yahooFinance = require('yahoo-finance2').default;
 const fs = require('fs');
 const path = require('path');
+const csv = require('csv-parser');
 
-// Define your Nifty 500 symbols — add more as needed
-const niftySymbols = [
-  'RELIANCE.NS', 'TCS.NS', 'INFY.NS', 'HDFCBANK.NS', 'ICICIBANK.NS',
-  'LT.NS', 'ITC.NS', 'KOTAKBANK.NS', 'SBIN.NS', 'ASIANPAINT.NS',
-  'MARUTI.NS', 'BAJFINANCE.NS', 'AXISBANK.NS', 'HINDUNILVR.NS', 'WIPRO.NS',
-  'SUNPHARMA.NS', 'HCLTECH.NS', 'TITAN.NS', 'ULTRACEMCO.NS', 'POWERGRID.NS',
-  // Add the rest of the Nifty 500 here or load from a file later
-];
+console.log("✅ Cronjob service initialized");
 
+// 🔁 Load symbols from CSV
+async function getSymbolsFromCSV(filePath) {
+  return new Promise((resolve, reject) => {
+    const symbols = [];
+    fs.createReadStream(filePath)
+      .pipe(csv())
+      .on('data', (row) => {
+        const symbol = row[Object.keys(row)[2]]; // column C (3rd column)
+        if (symbol) symbols.push(symbol.trim() + '.NS');
+      })
+      .on('end', () => resolve(symbols))
+      .on('error', reject);
+  });
+}
+
+// ⚡ Nifty 500 Top Gainers/Losers Cron Job
 async function runScraper() {
   console.log("⚡ Running Nifty 500 API fetch...");
+
+  const csvPath = path.join(__dirname, 'nifty500.csv');
+  const niftySymbols = await getSymbolsFromCSV(csvPath);
 
   try {
     const stockData = [];
@@ -53,20 +66,19 @@ async function runScraper() {
     const outputDir = path.join(__dirname, 'public');
     fs.mkdirSync(outputDir, { recursive: true });
 
-    const outputPath = path.join(outputDir, 'nifty500.json');
-    fs.writeFileSync(outputPath, JSON.stringify(result, null, 2));
+    fs.writeFileSync(
+      path.join(outputDir, 'nifty500.json'),
+      JSON.stringify(result, null, 2)
+    );
 
     console.log("✅ Data saved to public/nifty500.json");
 
   } catch (err) {
-    console.error("❌ Error in cron job:", err.message);
+    console.error("❌ Error in stock cron job:", err.message);
   }
 }
 
+// 🕒 Schedule the stock cron job (6:00 PM IST daily)
 module.exports = () => {
-  console.log("✅ Cron job initialized");
-
-  // Schedule the job to run at 6 PM IST every day
   cron.schedule('0 18 * * *', runScraper);
 };
-
