@@ -45,7 +45,7 @@ async function runScraper() {
       .slice(0, 9);
 
     const result = {
-      updatedAt: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
+      updatedAt: new Date().toISOString(),
       gainers,
       losers
     };
