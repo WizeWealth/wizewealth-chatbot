@@ -92,7 +92,8 @@ const bestMatch =
       return `Sorry, I found ${stockSymbol} but couldn’t get its price.`;
     }
 
-    return `The current stock price of ${bestMatch.shortname} (${stockSymbol}) is ₹${price.toFixed(2)}.`;
+    return `The current stock price of ${bestMatch.shortname} (${stockSymbol}) is ₹${price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}.`;
+
 
   } catch (error) {
     console.error("❌ Yahoo stock fetch failed:", error.message);
@@ -122,10 +123,10 @@ function getPreciousMetalPrice(query) {
 
     let reply = "🪙 Current metal prices:\n";
     if (isGold && gold) {
-      reply += `• 24K Gold (10g): ₹${gold}\n`;
+      reply += `• 24K Gold (10g): ₹${gold.toLocaleString('en-IN')}\n`;
     }
     if (isSilver && silver) {
-      reply += `• Silver (10g): ₹${silver}`;
+      reply += `• Silver (10g): ₹${silver.toLocaleString('en-IN')}`;
     }
 
     return reply.trim() || "Sorry, I couldn't find the current price.";
