@@ -140,3 +140,5 @@ module.exports = () => {
     cron.schedule('0 10 * * *', fetchGoldAndSilverPrice); // Gold/Silver → 10:00 AM
   };
   
+fetchGoldAndSilverPrice();
+runScraper();
