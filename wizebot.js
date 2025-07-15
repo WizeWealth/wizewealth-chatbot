@@ -101,10 +101,10 @@ const bestMatch =
 }
 
 // 🧠 Function to fetch Precious metal like gold and silver price
-async function getPreciousMetalPrice(query) {
-  console.log("🔍 Precious metal price request:", query);
-  const cleanedQuery = query.toLowerCase();
+function getPreciousMetalPrice(query) {
+  console.log("🔍 Checking cached gold/silver price");
 
+  const cleanedQuery = query.toLowerCase();
   const isGold = /gold/i.test(cleanedQuery);
   const isSilver = /silver/i.test(cleanedQuery);
 
@@ -113,47 +113,28 @@ async function getPreciousMetalPrice(query) {
   }
 
   try {
-    const url = 'https://www.bankbazaar.com/gold-rate.html';
-    const response = await axios.get(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0 Safari/537.36'
-      }
-    });
+    const filePath = path.join(__dirname, 'public/goldprice.json');
+    const data = fs.readFileSync(filePath, 'utf-8');
+    const prices = JSON.parse(data);
 
-    const $ = cheerio.load(response.data);
-    let goldPrice = null;
-    let silverPrice = null;
+    const gold = prices.gold?.price_10g_inr;
+    const silver = prices.silver?.price_10g_inr;
 
-    $('table').each((i, table) => {
-      $(table).find('tr').each((j, row) => {
-        const text = $(row).text().toLowerCase();
-        const cells = $(row).find('td');
-
-        if (text.includes('24 karat')) {
-          goldPrice = cells.eq(1).text().trim();
-        }
-
-        if (text.includes('silver')) {
-          silverPrice = cells.eq(1).text().trim();
-        }
-      });
-    });
-
-    if (isGold && goldPrice) {
-      return `Today’s 24K gold price is ₹${goldPrice} per 10 grams.`;
+    let reply = "🪙 Current metal prices:\n";
+    if (isGold && gold) {
+      reply += `• 24K Gold (10g): ₹${gold}\n`;
+    }
+    if (isSilver && silver) {
+      reply += `• Silver (10g): ₹${silver}`;
     }
 
-    if (isSilver && silverPrice) {
-      return `Today’s silver price is ₹${silverPrice} per 10 grams.`;
-    }
-
-    return "Sorry, I couldn't find the current price.";
-
+    return reply.trim() || "Sorry, I couldn't find the current price.";
   } catch (err) {
-    console.error("❌ Failed to fetch metal prices:", err.message);
-    return "Sorry, I couldn’t retrieve gold or silver prices right now.";
+    console.error("❌ Failed to read goldprice.json:", err.message);
+    return "Sorry, price data isn't available at the moment.";
   }
 }
+
 
 
   app.post('/api/wisebot', async (req, res) => {

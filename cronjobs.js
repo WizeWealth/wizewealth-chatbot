@@ -1,3 +1,4 @@
+const axios = require('axios');
 const cron = require('node-cron');
 const yahooFinance = require('yahoo-finance2').default;
 const fs = require('fs');
@@ -47,20 +48,15 @@ async function runScraper() {
       }
     }
 
-    const parsePercent = (p) => parseFloat(p.replace('%', ''));
+    const gainers = [...stockData]
+      .filter(s => parseFloat(s.change) > 0)
+      .sort((a, b) => parseFloat(b.changePercent) - parseFloat(a.changePercent))
+      .slice(0, 9);
 
-// Top gainers: highest positive % change
-const gainers = [...stockData]
-  .filter(s => parseFloat(s.change) > 0)
-  .sort((a, b) => parsePercent(b.changePercent) - parsePercent(a.changePercent))
-  .slice(0, 9);
-
-// Top losers: highest negative % change
-const losers = [...stockData]
-  .filter(s => parseFloat(s.change) < 0)
-  .sort((a, b) => parsePercent(a.changePercent) - parsePercent(b.changePercent))
-  .slice(0, 9);
-
+    const losers = [...stockData]
+      .filter(s => parseFloat(s.change) < 0)
+      .sort((a, b) => parseFloat(b.changePercent) - parseFloat(a.changePercent))
+      .slice(0, 9);
 
     const result = {
       updatedAt: new Date().toISOString(),
@@ -83,9 +79,59 @@ const losers = [...stockData]
   }
 }
 
+// ⚡ Precious metals price fetch Cron Job
+async function fetchGoldAndSilverPrice() {
+  console.log("🥇 Fetching gold and silver price...");
+
+  try {
+    const goldRes = await axios.get('https://www.goldapi.io/api/XAU/INR', {
+      headers: {
+        'x-access-token': process.env.GOLD_API_KEY,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    const silverRes = await axios.get('https://www.goldapi.io/api/XAG/INR', {
+      headers: {
+        'x-access-token': process.env.GOLD_API_KEY,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    const ozToGram = 31.1035;
+    const goldPerGram = goldRes.data.price / ozToGram;
+    const silverPerGram = silverRes.data.price / ozToGram;
+
+    const result = {
+      gold: {
+        price_10g_inr: parseFloat((goldPerGram * 10).toFixed(2)),
+        source: '24K Gold',
+        updatedAt: new Date().toISOString()
+      },
+      silver: {
+        price_10g_inr: parseFloat((silverPerGram * 10).toFixed(2)),
+        updatedAt: new Date().toISOString()
+      }
+    };
+
+    const outputDir = path.join(__dirname, 'public');
+    fs.mkdirSync(outputDir, { recursive: true });
+
+    fs.writeFileSync(
+      path.join(outputDir, 'goldprice.json'),
+      JSON.stringify(result, null, 2)
+    );
+
+    console.log("✅ Gold & silver prices saved to public/goldprice.json");
+
+  } catch (err) {
+    console.error("❌ Failed to fetch gold/silver prices:", err.message);
+  }
+}
+
 // 🕒 Schedule the stock cron job (6:00 PM IST daily)
 module.exports = () => {
-  cron.schedule('0 17 * * *', runScraper, {
-  timezone: 'Asia/Kolkata'
-});
-};
+    cron.schedule('0 17 * * *', runScraper);              // Nifty 500 → 5:00 PM
+    cron.schedule('0 10 * * *', fetchGoldAndSilverPrice); // Gold/Silver → 10:00 AM
+  };
+  
