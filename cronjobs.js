@@ -99,17 +99,22 @@ async function fetchGoldAndSilverPrice() {
     });
 
     const ozToGram = 31.1035;
-    const goldPerGram = goldRes.data.price / ozToGram;
-    const silverPerGram = silverRes.data.price / ozToGram;
+
+const goldSpotPerGram = goldRes.data.price / ozToGram;
+const goldRetailPerGram = goldSpotPerGram * 1.09;
+
+const silverSpotPerGram = silverRes.data.price / ozToGram;
+const silverRetailPerGram = silverSpotPerGram * 1.09;
+
 
     const result = {
       gold: {
-        price_10g_inr: parseFloat((goldPerGram * 10).toFixed(2)),
+        price_10g_inr: parseFloat((goldRetailPerGram * 10).toFixed(2)),
         source: '24K Gold',
         updatedAt: new Date().toISOString()
       },
       silver: {
-        price_10g_inr: parseFloat((silverPerGram * 10).toFixed(2)),
+        price_10g_inr: parseFloat((silverRetailPerGram * 10).toFixed(2)),
         updatedAt: new Date().toISOString()
       }
     };
@@ -134,6 +139,4 @@ module.exports = () => {
     cron.schedule('0 17 * * *', runScraper);              // Nifty 500 → 5:00 PM
     cron.schedule('0 10 * * *', fetchGoldAndSilverPrice); // Gold/Silver → 10:00 AM
   };
-  fetchGoldAndSilverPrice();
-runScraper();
-
+  
