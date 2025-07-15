@@ -134,4 +134,6 @@ module.exports = () => {
     cron.schedule('0 17 * * *', runScraper);              // Nifty 500 → 5:00 PM
     cron.schedule('0 10 * * *', fetchGoldAndSilverPrice); // Gold/Silver → 10:00 AM
   };
-  
+  fetchGoldAndSilverPrice();
+runScraper();
+
