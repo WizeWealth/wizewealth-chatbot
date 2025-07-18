@@ -134,9 +134,17 @@ const silverRetailPerGram = silverSpotPerGram * 1.09;
   }
 }
 
-// 🕒 Schedule the stock cron job (6:00 PM IST daily)
+// 🕒 Schedule the stock cron job (IST timezone)
 module.exports = () => {
-    cron.schedule('0 17 * * *', runScraper);              // Nifty 500 → 5:00 PM
-    cron.schedule('0 10 * * *', fetchGoldAndSilverPrice); // Gold/Silver → 10:00 AM
-  };
+  cron.schedule('0 17 * * *', runScraper, {
+    timezone: 'Asia/Kolkata'  // 5:00 PM IST
+  });
+
+  cron.schedule('0 10 * * *', fetchGoldAndSilverPrice, {
+    timezone: 'Asia/Kolkata'  // 10:00 AM IST
+  });
+
+  console.log("🕒 Cron jobs scheduled (IST)");
+};
+
 
