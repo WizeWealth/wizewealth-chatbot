@@ -140,7 +140,7 @@ module.exports = () => {
     timezone: 'Asia/Kolkata'  // 5:00 PM IST
   });
 
-  cron.schedule('0 10 * * *', fetchGoldAndSilverPrice, {
+  cron.schedule('0 12 * * *', fetchGoldAndSilverPrice, {
     timezone: 'Asia/Kolkata'  // 10:00 AM IST
   });
 
