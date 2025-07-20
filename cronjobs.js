@@ -141,7 +141,7 @@ const silverRetailPerGram = silverSpotPerGram * 1.09;
 
 // 🕒 Schedule the stock cron job (IST timezone)
 module.exports = () => {
-  cron.schedule('42 17 * * *', runScraper, {
+  cron.schedule('0 17 * * *', runScraper, {
     timezone: 'Asia/Kolkata'  // 5:00 PM IST
   });
 
