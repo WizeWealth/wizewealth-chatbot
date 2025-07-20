@@ -48,15 +48,20 @@ async function runScraper() {
       }
     }
 
-    const gainers = [...stockData]
-      .filter(s => parseFloat(s.change) > 0)
-      .sort((a, b) => parseFloat(b.changePercent) - parseFloat(a.changePercent))
-      .slice(0, 9);
+  const parsePercent = (p) => parseFloat(p.replace('%', ''));
 
-    const losers = [...stockData]
-      .filter(s => parseFloat(s.change) < 0)
-      .sort((a, b) => parseFloat(b.changePercent) - parseFloat(a.changePercent))
-      .slice(0, 9);
+// Top gainers: highest positive % change
+const gainers = [...stockData]
+  .filter(s => parseFloat(s.change) > 0)
+  .sort((a, b) => parsePercent(b.changePercent) - parsePercent(a.changePercent))
+  .slice(0, 9);
+
+// Top losers: highest negative % change (i.e., most loss)
+const losers = [...stockData]
+  .filter(s => parseFloat(s.change) < 0)
+  .sort((a, b) => parsePercent(a.changePercent) - parsePercent(b.changePercent))
+  .slice(0, 9);
+
 
     const result = {
       updatedAt: new Date().toISOString(),
@@ -136,7 +141,7 @@ const silverRetailPerGram = silverSpotPerGram * 1.09;
 
 // 🕒 Schedule the stock cron job (IST timezone)
 module.exports = () => {
-  cron.schedule('0 17 * * *', runScraper, {
+  cron.schedule('42 17 * * *', runScraper, {
     timezone: 'Asia/Kolkata'  // 5:00 PM IST
   });
 
