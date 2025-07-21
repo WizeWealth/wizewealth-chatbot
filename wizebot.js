@@ -14,7 +14,7 @@ function registerWizeBotRoutes(app) {
   // 🧠 Function to fetch stock price from fuzzy user input
 async function getStockPriceByFuzzyName(query) {
   console.log("📈 Triggered stock price function with query:", query);
-  const cleanedQuery = query.toLowerCase().replace(/['’]/g, '').replace(/[^a-z\s]/g, '');
+  const cleanedQuery = query.toLowerCase().replace(/['']/g, '').replace(/[^a-z\s]/g, '');
 const words = cleanedQuery.split(/\s+/);
 const stopWords = ['price', 'stock', 'share', 'of', 'today', 'tell', 'me', 'what', 'is', 'can', 'you', 'please', 'the', 'value', 'quote', 'rate'];
 
@@ -89,7 +89,7 @@ const bestMatch =
     const price = quoteResponse.data.chart.result[0].meta.regularMarketPrice;
 
     if (!price || isNaN(price)) {
-      return `Sorry, I found ${stockSymbol} but couldn’t get its price.`;
+      return `Sorry, I found ${stockSymbol} but couldn't get its price.`;
     }
 
     return `The current stock price of ${bestMatch.shortname} (${stockSymbol}) is ₹${price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}.`;
@@ -139,73 +139,96 @@ function getPreciousMetalPrice(query) {
 
 
   app.post('/api/wisebot', async (req, res) => {
-  console.log("✅ /chat endpoint hit");
-  const userMessage = req.body.message;
-  console.log("🟡 User message received:", userMessage);
-  const timestamp = new Date().toISOString();
-  const logFilePath = path.join(__dirname, 'chatlogs.txt');
+    console.log("✅ /chat endpoint hit");
+    const userMessage = req.body.message;
+    console.log("🟡 User message received:", userMessage);
+    
+    // 🔹 Custom quick replies for default suggestions - CHECK THIS FIRST
+    const quickReplies = {
+      "when should i buy a car?": "🚘 A good time to buy a car is at the end of the year or during festive sales when dealerships offer discounts. But make sure it's aligned with your financial goals.",
+      "where to invest 1 lakh rupees?": "💰 You can invest ₹1 lakh across mutual funds, fixed deposits, and stocks. A balanced split could be: 50% mutual funds, 30% FDs, and 20% in quality stocks.",
+      "is it a good time to buy gold?": "🌕 Gold is a long-term hedge against inflation. Invest steadily rather than trying to time the market. Buying during dips or in small tranches is safer.",
+      "how to create an emergency fund?": "‼️ Start by saving 3–6 months of expenses in a liquid fund or savings account. Automate monthly savings until the goal is reached.",
+      "how to start investing in stocks?": "📈 Open a demat account, start with blue-chip stocks or index funds, and invest regularly. Learn the basics before trading actively."
+    };
+    
+    // 🔹 Normalize the user message for comparison
+    const normalized = userMessage.trim().toLowerCase();
+    console.log("🔍 Normalized message:", normalized);
+    console.log("🔍 Available quick replies:", Object.keys(quickReplies));
+    
+    // 🔹 Check for exact match first - HIGHEST PRIORITY
+    if (quickReplies[normalized]) {
+      console.log("✅ Found exact match for quick reply");
+      return res.json({ reply: quickReplies[normalized] });
+    }
+    
+    const timestamp = new Date().toISOString();
+    const logFilePath = path.join(__dirname, 'chatlogs.txt');
+    
+    // ✅ Check for stock price query
+    const msg = userMessage.toLowerCase();
+
+    const isStockQuery =
+      /(stock|share)/i.test(msg) &&
+      /(price|value|quote|rate)/i.test(msg);
+
+    if (isStockQuery) {
+      console.log("🧠 Detected stock query intent");
+      const stockReply = await getStockPriceByFuzzyName(userMessage);
+      return res.json({ reply: stockReply });
+    }
+    
+    // ✅ Check for precious metal price query
+    const isMetalQuery =
+      /(gold|silver)/i.test(msg) &&
+      /(price|rate|cost|value)/i.test(msg);
+
+    if (isMetalQuery) {
+      console.log("🧠 Detected precious metal query intent");
+      const metalReply = getPreciousMetalPrice(userMessage);
+      return res.json({ reply: metalReply });
+    }
+
+    try {
+      const response = await axios.post('https://api.openai.com/v1/chat/completions', {
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content: `You are WizeBot, a smart and friendly financial assistant created by WizeWealth.`
+          },
+          { role: 'user', content: userMessage }]
+      }, {
+        headers: {
+          'Authorization': `Bearer ${OPENAI_API_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const reply = response.data.choices[0].message.content;
+
+      // Store the chat log (question + answer) line by line in chatlogs.txt
+      const logEntry = { timestamp, question: userMessage, answer: reply };
+      const line = JSON.stringify(logEntry) + '\n';
+
+      fs.appendFile(logFilePath, line, (err) => {
+        if (err) {
+          console.error('❌ Failed to write log:', err);
+        } else {
+          console.log('✅ Log saved to chatlogs.txt');
+        }
+      });
+
+      res.json({ reply });
+
+    } catch (error) {
+      console.error('OpenAI API Error:', error.response?.data || error.message);
+      res.status(500).json({ reply: 'Sorry, something went wrong.' });
+    }
+  });
   
-// ✅ Check for stock price query first
-const msg = userMessage.toLowerCase();
-
-const isStockQuery =
-  /(stock|share)/i.test(msg) &&
-  /(price|value|quote|rate)/i.test(msg);
-
-if (isStockQuery) {
-  console.log("🧠 Detected stock query intent");
-  const stockReply = await getStockPriceByFuzzyName(userMessage);
-  return res.json({ reply: stockReply });
-}
-  // ✅ Check for precious metal price query
-const isMetalQuery =
-  /(gold|silver)/i.test(msg) &&
-  /(price|rate|cost|value)/i.test(msg);
-
-if (isMetalQuery) {
-  console.log("🧠 Detected precious metal query intent");
-  const metalReply = await getPreciousMetalPrice(userMessage);
-  return res.json({ reply: metalReply });
+  console.log('✅ wizebot.js loaded');
 }
 
-
-  try {
-    const response = await axios.post('https://api.openai.com/v1/chat/completions', {
-      model: 'gpt-4o-mini',
-      messages: [
-        {
-          role: 'system',
-          content: `You are WizeBot, a smart and friendly financial assistant created by WizeWealth.`
-        },
-        { role: 'user', content: userMessage }]
-    }, {
-      headers: {
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
-        'Content-Type': 'application/json'
-      }
-    });
-
-    const reply = response.data.choices[0].message.content;
-
-    // Store the chat log (question + answer) line by line in chatlogs.txt
-    const logEntry = { timestamp, question: userMessage, answer: reply };
-    const line = JSON.stringify(logEntry) + '\n';
-
-    fs.appendFile(logFilePath, line, (err) => {
-      if (err) {
-        console.error('❌ Failed to write log:', err);
-      } else {
-        console.log('✅ Log saved to chatlogs.txt');
-      }
-    });
-
-    res.json({ reply });
-
-  } catch (error) {
-    console.error('OpenAI API Error:', error.response?.data || error.message);
-    res.status(500).json({ reply: 'Sorry, something went wrong.' });
-  }
-});
-console.log('✅ wizebot.js loaded');
-}
 module.exports = registerWizeBotRoutes;
